@@ -1,6 +1,6 @@
 # kt-feature-flag
 
-[![CI](https://github.com/philiprehberger/kt-feature-flag/actions/workflows/ci.yml/badge.svg)](https://github.com/philiprehberger/kt-feature-flag/actions/workflows/ci.yml)
+[![CI](https://github.com/philiprehberger/kt-feature-flag/actions/workflows/publish.yml/badge.svg)](https://github.com/philiprehberger/kt-feature-flag/actions/workflows/publish.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/com.philiprehberger/feature-flag)](https://central.sonatype.com/artifact/com.philiprehberger/feature-flag)
 
 Local feature flag evaluation with percentage rollouts and user targeting.

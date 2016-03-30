@@ -1,5 +1,7 @@
 package com.philiprehberger.featureflag
 
+import java.time.Duration
+
 /**
  * DSL builder for creating a [FeatureFlags] instance.
  *
@@ -38,6 +40,16 @@ class FeatureFlagsBuilder {
      */
     fun jsonFile(path: String) {
         sources.add(JsonFileSource(path))
+    }
+
+    /**
+     * Wraps a [FlagSource] with a [CachedFlagSource] using the given TTL.
+     *
+     * @param source the underlying source to cache
+     * @param ttl the time-to-live for cached results
+     */
+    fun cachedSource(source: FlagSource, ttl: Duration) {
+        sources.add(CachedFlagSource(source, ttl))
     }
 
     internal fun build(): FeatureFlags {

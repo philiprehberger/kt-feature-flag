@@ -6,6 +6,19 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 /**
+ * Represents the evaluation state of a single flag.
+ *
+ * @property name the flag name
+ * @property enabled whether the flag is currently enabled (evaluated with empty context)
+ * @property definition the underlying flag definition
+ */
+data class FlagState(
+    val name: String,
+    val enabled: Boolean,
+    val definition: FlagDefinition
+)
+
+/**
  * The main entry point for evaluating feature flags.
  *
  * Loads flag definitions from one or more [FlagSource] instances
@@ -17,6 +30,8 @@ class FeatureFlags internal constructor(
     private val sources: List<FlagSource>
 ) {
     @PublishedApi internal val flagsFlow = MutableStateFlow(loadAll())
+
+    private val changeListeners = mutableListOf<FlagChangeListener>()
 
     private fun loadAll(): Map<String, FlagDefinition> {
         val merged = mutableMapOf<String, FlagDefinition>()
@@ -75,9 +90,62 @@ class FeatureFlags internal constructor(
     /**
      * Reloads all flag definitions from the configured sources.
      *
-     * This triggers emission on any active [observe] flows if values change.
+     * This triggers emission on any active [observe] flows if values change
+     * and notifies registered [FlagChangeListener]s of any changes.
      */
     fun reload() {
-        flagsFlow.value = loadAll()
+        val oldFlags = flagsFlow.value
+        val newFlags = loadAll()
+        flagsFlow.value = newFlags
+
+        if (changeListeners.isNotEmpty()) {
+            val allNames = (oldFlags.keys + newFlags.keys)
+            for (name in allNames) {
+                val oldValue = oldFlags[name]?.evaluate(name, FlagContext.EMPTY) ?: false
+                val newValue = newFlags[name]?.evaluate(name, FlagContext.EMPTY) ?: false
+                if (oldValue != newValue) {
+                    for (listener in changeListeners) {
+                        listener.onFlagChanged(name, oldValue, newValue)
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns a list of all defined flags with their current evaluation state.
+     *
+     * Each flag is evaluated against [FlagContext.EMPTY] to determine its
+     * current enabled state.
+     *
+     * @return a list of [FlagState] for every defined flag
+     */
+    fun allFlags(): List<FlagState> {
+        return flagsFlow.value.map { (name, definition) ->
+            FlagState(
+                name = name,
+                enabled = definition.evaluate(name, FlagContext.EMPTY),
+                definition = definition
+            )
+        }
+    }
+
+    /**
+     * Registers a [FlagChangeListener] that will be notified on [reload]
+     * when any flag's evaluation result changes.
+     *
+     * @param listener the listener to register
+     */
+    fun addChangeListener(listener: FlagChangeListener) {
+        changeListeners.add(listener)
+    }
+
+    /**
+     * Removes a previously registered [FlagChangeListener].
+     *
+     * @param listener the listener to remove
+     */
+    fun removeChangeListener(listener: FlagChangeListener) {
+        changeListeners.remove(listener)
     }
 }

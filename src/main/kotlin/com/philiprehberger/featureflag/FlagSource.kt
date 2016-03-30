@@ -4,6 +4,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import java.io.File
+import java.time.Duration
+import java.time.Instant
 
 /**
  * A source of feature flag definitions.
@@ -53,4 +55,69 @@ class JsonFileSource(private val path: String) : FlagSource {
             json.decodeFromJsonElement<FlagDefinition>(value)
         }
     }
+}
+
+/**
+ * A caching wrapper around another [FlagSource] that stores results
+ * for a configurable time-to-live (TTL) duration.
+ *
+ * When the TTL has not expired, [load] returns the cached results
+ * without delegating to the underlying source. After the TTL expires,
+ * the next call to [load] fetches fresh data from the delegate.
+ *
+ * @property delegate the underlying flag source to cache
+ * @property ttl the time-to-live for cached results
+ * @property clock a function returning the current time (for testing)
+ */
+class CachedFlagSource(
+    private val delegate: FlagSource,
+    private val ttl: Duration,
+    private val clock: () -> Instant = { Instant.now() }
+) : FlagSource {
+    @Volatile
+    private var cachedResult: Map<String, FlagDefinition>? = null
+
+    @Volatile
+    private var cachedAt: Instant? = null
+
+    override fun load(): Map<String, FlagDefinition> {
+        val now = clock()
+        val cached = cachedResult
+        val at = cachedAt
+
+        if (cached != null && at != null && Duration.between(at, now) < ttl) {
+            return cached
+        }
+
+        val fresh = delegate.load()
+        cachedResult = fresh
+        cachedAt = now
+        return fresh
+    }
+
+    /**
+     * Clears the cache, forcing the next [load] call to fetch from the delegate.
+     */
+    fun invalidate() {
+        cachedResult = null
+        cachedAt = null
+    }
+}
+
+/**
+ * Listener interface for receiving notifications when flag values change.
+ *
+ * Implement this functional interface and register it with
+ * [FeatureFlags.addChangeListener] to be notified whenever a flag's
+ * evaluation result changes after a [FeatureFlags.reload].
+ */
+fun interface FlagChangeListener {
+    /**
+     * Called when a flag's value changes.
+     *
+     * @param name the flag name
+     * @param oldValue the previous evaluation result
+     * @param newValue the new evaluation result
+     */
+    fun onFlagChanged(name: String, oldValue: Boolean, newValue: Boolean)
 }

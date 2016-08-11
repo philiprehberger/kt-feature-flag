@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.9.22"
+    kotlin("jvm") version "2.0.21"
     kotlin("plugin.serialization") version "1.9.22"
     `maven-publish`
     signing
@@ -24,6 +24,7 @@ tasks.test {
 }
 
 kotlin {
+    explicitApi()
     jvmToolchain(17)
 }
 
@@ -46,6 +47,10 @@ publishing {
                     url.set("https://github.com/philiprehberger/kt-feature-flag")
                     connection.set("scm:git:git://github.com/philiprehberger/kt-feature-flag.git")
                     developerConnection.set("scm:git:ssh://github.com/philiprehberger/kt-feature-flag.git")
+                }
+                issueManagement {
+                    system.set("GitHub Issues")
+                    url.set("https://github.com/philiprehberger/kt-feature-flag/issues")
                 }
             }
         }

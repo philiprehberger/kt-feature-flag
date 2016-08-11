@@ -12,10 +12,10 @@ import kotlin.math.absoluteValue
  * @property owner the person or team responsible for the flag
  * @property createdAt when the flag was created
  */
-data class FlagMetadata(
-    val description: String,
-    val owner: String? = null,
-    val createdAt: Instant? = null
+public data class FlagMetadata(
+    public val description: String,
+    public val owner: String? = null,
+    public val createdAt: Instant? = null
 )
 
 /**
@@ -29,13 +29,13 @@ data class FlagMetadata(
  * - [CompositeFlag] for combining rules with AND/OR operators
  */
 @Serializable
-sealed interface FlagDefinition {
+public sealed interface FlagDefinition {
 
     /**
      * Optional metadata for this flag definition.
      * Defaults to null for backward compatibility.
      */
-    val metadata: FlagMetadata?
+    public val metadata: FlagMetadata?
         get() = null
 
     /**
@@ -45,7 +45,7 @@ sealed interface FlagDefinition {
      * @param context the evaluation context
      * @return true if the flag is enabled for this context
      */
-    fun evaluate(flagName: String, context: FlagContext): Boolean
+    public fun evaluate(flagName: String, context: FlagContext): Boolean
 
     /**
      * Returns a copy of this flag definition with the given metadata attached.
@@ -53,7 +53,7 @@ sealed interface FlagDefinition {
      * @param metadata the metadata to attach
      * @return a new flag definition with metadata
      */
-    fun withMetadata(metadata: FlagMetadata): FlagDefinition
+    public fun withMetadata(metadata: FlagMetadata): FlagDefinition
 }
 
 /**
@@ -64,10 +64,10 @@ sealed interface FlagDefinition {
  */
 @Serializable
 @SerialName("boolean")
-data class BooleanFlag(
-    val enabled: Boolean,
+public data class BooleanFlag(
+    public val enabled: Boolean,
     @kotlinx.serialization.Transient
-    override val metadata: FlagMetadata? = null
+    public override val metadata: FlagMetadata? = null
 ) : FlagDefinition {
     override fun evaluate(flagName: String, context: FlagContext): Boolean = enabled
 
@@ -86,10 +86,10 @@ data class BooleanFlag(
  */
 @Serializable
 @SerialName("percentage")
-data class PercentageFlag(
-    val percentage: Int,
+public data class PercentageFlag(
+    public val percentage: Int,
     @kotlinx.serialization.Transient
-    override val metadata: FlagMetadata? = null
+    public override val metadata: FlagMetadata? = null
 ) : FlagDefinition {
     init {
         require(percentage in 0..100) { "Percentage must be between 0 and 100, got $percentage" }
@@ -116,10 +116,10 @@ data class PercentageFlag(
  */
 @Serializable
 @SerialName("segment")
-data class SegmentFlag(
-    val enabledFor: Map<String, List<String>>,
+public data class SegmentFlag(
+    public val enabledFor: Map<String, List<String>>,
     @kotlinx.serialization.Transient
-    override val metadata: FlagMetadata? = null
+    public override val metadata: FlagMetadata? = null
 ) : FlagDefinition {
     override fun evaluate(flagName: String, context: FlagContext): Boolean {
         return enabledFor.any { (key, values) ->
@@ -138,11 +138,11 @@ data class SegmentFlag(
  * @property endDate the end of the enabled window (exclusive), or null for no end bound
  * @property metadata optional flag metadata
  */
-data class TimeBasedFlag(
-    val startDate: Instant? = null,
-    val endDate: Instant? = null,
+public data class TimeBasedFlag(
+    public val startDate: Instant? = null,
+    public val endDate: Instant? = null,
     @kotlinx.serialization.Transient
-    override val metadata: FlagMetadata? = null,
+    public override val metadata: FlagMetadata? = null,
     private val clock: () -> Instant = { Instant.now() }
 ) : FlagDefinition {
     override fun evaluate(flagName: String, context: FlagContext): Boolean {
@@ -159,7 +159,7 @@ data class TimeBasedFlag(
 /**
  * The boolean operator for combining flag rules.
  */
-enum class CompositeOperator {
+public enum class CompositeOperator {
     /** All rules must evaluate to true. */
     AND,
     /** At least one rule must evaluate to true. */
@@ -173,11 +173,11 @@ enum class CompositeOperator {
  * @property operator the boolean operator (AND or OR)
  * @property metadata optional flag metadata
  */
-data class CompositeFlag(
-    val rules: List<FlagDefinition>,
-    val operator: CompositeOperator,
+public data class CompositeFlag(
+    public val rules: List<FlagDefinition>,
+    public val operator: CompositeOperator,
     @kotlinx.serialization.Transient
-    override val metadata: FlagMetadata? = null
+    public override val metadata: FlagMetadata? = null
 ) : FlagDefinition {
     override fun evaluate(flagName: String, context: FlagContext): Boolean {
         return when (operator) {
@@ -197,7 +197,7 @@ data class CompositeFlag(
  * @param other the other flag definition
  * @return a [CompositeFlag] combining both with AND
  */
-infix fun FlagDefinition.and(other: FlagDefinition): CompositeFlag {
+public infix fun FlagDefinition.and(other: FlagDefinition): CompositeFlag {
     val existingRules = if (this is CompositeFlag && operator == CompositeOperator.AND) rules else listOf(this)
     val otherRules = if (other is CompositeFlag && other.operator == CompositeOperator.AND) other.rules else listOf(other)
     return CompositeFlag(existingRules + otherRules, CompositeOperator.AND)
@@ -210,7 +210,7 @@ infix fun FlagDefinition.and(other: FlagDefinition): CompositeFlag {
  * @param other the other flag definition
  * @return a [CompositeFlag] combining both with OR
  */
-infix fun FlagDefinition.or(other: FlagDefinition): CompositeFlag {
+public infix fun FlagDefinition.or(other: FlagDefinition): CompositeFlag {
     val existingRules = if (this is CompositeFlag && operator == CompositeOperator.OR) rules else listOf(this)
     val otherRules = if (other is CompositeFlag && other.operator == CompositeOperator.OR) other.rules else listOf(other)
     return CompositeFlag(existingRules + otherRules, CompositeOperator.OR)

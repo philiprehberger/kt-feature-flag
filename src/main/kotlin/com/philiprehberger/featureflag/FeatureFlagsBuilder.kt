@@ -11,7 +11,7 @@ import java.time.Duration
  * }
  * ```
  */
-class FeatureFlagsBuilder {
+public class FeatureFlagsBuilder {
     private val sources = mutableListOf<FlagSource>()
 
     /**
@@ -20,7 +20,7 @@ class FeatureFlagsBuilder {
      *
      * @param source the flag source to add
      */
-    fun source(source: FlagSource) {
+    public fun source(source: FlagSource) {
         sources.add(source)
     }
 
@@ -29,7 +29,7 @@ class FeatureFlagsBuilder {
      *
      * @param flags the map of flag names to definitions
      */
-    fun inMemory(flags: Map<String, FlagDefinition>) {
+    public fun inMemory(flags: Map<String, FlagDefinition>) {
         sources.add(InMemorySource(flags))
     }
 
@@ -38,7 +38,7 @@ class FeatureFlagsBuilder {
      *
      * @param path the file path to the JSON file
      */
-    fun jsonFile(path: String) {
+    public fun jsonFile(path: String) {
         sources.add(JsonFileSource(path))
     }
 
@@ -48,7 +48,7 @@ class FeatureFlagsBuilder {
      * @param source the underlying source to cache
      * @param ttl the time-to-live for cached results
      */
-    fun cachedSource(source: FlagSource, ttl: Duration) {
+    public fun cachedSource(source: FlagSource, ttl: Duration) {
         sources.add(CachedFlagSource(source, ttl))
     }
 
@@ -72,6 +72,6 @@ class FeatureFlagsBuilder {
  * @param block the builder configuration
  * @return a configured [FeatureFlags] instance
  */
-fun featureFlags(block: FeatureFlagsBuilder.() -> Unit): FeatureFlags {
+public fun featureFlags(block: FeatureFlagsBuilder.() -> Unit): FeatureFlags {
     return FeatureFlagsBuilder().apply(block).build()
 }

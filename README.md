@@ -1,13 +1,10 @@
-# kt-feature-flag
+# feature-flag
 
 [![CI](https://github.com/philiprehberger/kt-feature-flag/actions/workflows/publish.yml/badge.svg)](https://github.com/philiprehberger/kt-feature-flag/actions/workflows/publish.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/com.philiprehberger/feature-flag)](https://central.sonatype.com/artifact/com.philiprehberger/feature-flag)
+[![License](https://img.shields.io/github/license/philiprehberger/kt-feature-flag)](LICENSE)
 
 Local feature flag evaluation with percentage rollouts, user targeting, time-based flags, and composable rules.
-
-## Requirements
-
-- Kotlin 1.9+ / Java 17+
 
 ## Installation
 
@@ -15,7 +12,7 @@ Local feature flag evaluation with percentage rollouts, user targeting, time-bas
 
 ```kotlin
 dependencies {
-    implementation("com.philiprehberger:feature-flag:0.2.0")
+    implementation("com.philiprehberger:feature-flag:0.2.3")
 }
 ```
 
@@ -33,7 +30,7 @@ dependencies {
 <dependency>
     <groupId>com.philiprehberger</groupId>
     <artifactId>feature-flag</artifactId>
-    <version>0.2.0</version>
+    <version>0.2.3</version>
 </dependency>
 ```
 

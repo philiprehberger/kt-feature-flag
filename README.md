@@ -3,6 +3,7 @@
 [![Tests](https://github.com/philiprehberger/kt-feature-flag/actions/workflows/publish.yml/badge.svg)](https://github.com/philiprehberger/kt-feature-flag/actions/workflows/publish.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/com.philiprehberger/feature-flag)](https://central.sonatype.com/artifact/com.philiprehberger/feature-flag)
 [![License](https://img.shields.io/github/license/philiprehberger/kt-feature-flag)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ec6cb9)](https://github.com/sponsors/philiprehberger)
 
 Local feature flag evaluation with percentage rollouts, user targeting, time-based flags, and composable rules.
 

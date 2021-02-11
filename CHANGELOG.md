@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0 (2026-03-31)
+
+- Add `VariantFlag` for multi-variant A/B testing with deterministic user bucketing
+- Add `getVariant()` to get the assigned variant for a user
+- Add `evaluateAll()` to evaluate all flags at once
+- Add `isEnabledWithDefault()` for checking flags with a custom default for undefined flags
+
 ## 0.2.5 (2026-03-31)
 
 - Standardize README to 3-badge format with emoji Support section

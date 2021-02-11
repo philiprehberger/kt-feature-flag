@@ -131,6 +131,50 @@ public class FeatureFlags internal constructor(
     }
 
     /**
+     * Evaluates all flags at once and returns a map of flag names to their enabled states.
+     *
+     * @param context the evaluation context (defaults to [FlagContext.EMPTY])
+     * @return a map of flag names to their boolean evaluation results
+     */
+    public fun evaluateAll(context: FlagContext = FlagContext.EMPTY): Map<String, Boolean> {
+        return flagsFlow.value.mapValues { (name, definition) ->
+            definition.evaluate(name, context)
+        }
+    }
+
+    /**
+     * Checks whether the given flag is enabled, returning [default] if the flag is not defined.
+     *
+     * Unlike [isEnabled] which returns false for undefined flags, this method
+     * lets you specify the default behavior for unknown flags.
+     *
+     * @param flag the flag name
+     * @param default the value to return if the flag is not defined
+     * @param context the evaluation context
+     * @return the flag's evaluated state, or [default] if not defined
+     */
+    public fun isEnabledWithDefault(flag: String, default: Boolean, context: FlagContext = FlagContext.EMPTY): Boolean {
+        val definition = flagsFlow.value[flag] ?: return default
+        return definition.evaluate(flag, context)
+    }
+
+    /**
+     * Gets the assigned variant for a variant flag.
+     *
+     * @param flag the flag name
+     * @param context the evaluation context
+     * @return the variant name, or null if the flag is not a [VariantFlag] or is not defined
+     */
+    public fun getVariant(flag: String, context: FlagContext = FlagContext.EMPTY): String? {
+        val definition = flagsFlow.value[flag] ?: return null
+        return if (definition is VariantFlag) {
+            definition.getVariant(flag, context)
+        } else {
+            null
+        }
+    }
+
+    /**
      * Registers a [FlagChangeListener] that will be notified on [reload]
      * when any flag's evaluation result changes.
      *

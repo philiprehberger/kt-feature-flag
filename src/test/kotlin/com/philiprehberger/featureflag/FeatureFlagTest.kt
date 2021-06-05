@@ -598,11 +598,11 @@ class FeatureFlagTest {
     @Test
     fun `evaluateAll returns all flags`() {
         val flags = featureFlags {
-            inMemory(
+            inMemory(mapOf(
                 "flag-a" to BooleanFlag(true),
                 "flag-b" to BooleanFlag(false),
                 "flag-c" to BooleanFlag(true)
-            )
+            ))
         }
         val result = flags.evaluateAll()
         assertEquals(3, result.size)
@@ -614,7 +614,7 @@ class FeatureFlagTest {
     @Test
     fun `isEnabledWithDefault returns default for undefined flag`() {
         val flags = featureFlags {
-            inMemory("flag-a" to BooleanFlag(true))
+            inMemory(mapOf("flag-a" to BooleanFlag(true)))
         }
         assertTrue(flags.isEnabledWithDefault("undefined-flag", default = true))
         assertFalse(flags.isEnabledWithDefault("undefined-flag", default = false))
@@ -623,7 +623,7 @@ class FeatureFlagTest {
     @Test
     fun `isEnabledWithDefault evaluates defined flag normally`() {
         val flags = featureFlags {
-            inMemory("flag-a" to BooleanFlag(false))
+            inMemory(mapOf("flag-a" to BooleanFlag(false)))
         }
         assertFalse(flags.isEnabledWithDefault("flag-a", default = true))
     }
@@ -660,9 +660,9 @@ class FeatureFlagTest {
     @Test
     fun `getVariant returns variant for VariantFlag`() {
         val flags = featureFlags {
-            inMemory("ab-test" to VariantFlag(
+            inMemory(mapOf("ab-test" to VariantFlag(
                 variants = mapOf("control" to 50, "treatment" to 50)
-            ))
+            )))
         }
         val ctx = flagContext { userId = "user-1" }
         val variant = flags.getVariant("ab-test", ctx)
@@ -673,7 +673,7 @@ class FeatureFlagTest {
     @Test
     fun `getVariant returns null for non-variant flag`() {
         val flags = featureFlags {
-            inMemory("bool-flag" to BooleanFlag(true))
+            inMemory(mapOf("bool-flag" to BooleanFlag(true)))
         }
         assertNull(flags.getVariant("bool-flag"))
     }
@@ -681,7 +681,7 @@ class FeatureFlagTest {
     @Test
     fun `getVariant returns null for undefined flag`() {
         val flags = featureFlags {
-            inMemory("flag-a" to BooleanFlag(true))
+            inMemory(mapOf("flag-a" to BooleanFlag(true)))
         }
         assertNull(flags.getVariant("undefined"))
     }

@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-03-18
+
+### Added
+- `TimeBasedFlag` with `startDate`/`endDate` for time-window-based feature flags
+- `CachedFlagSource` wrapper with configurable TTL for caching flag source results
+- `and` / `or` infix operators for combining flag rules into composite flags
+- `CompositeFlag` and `CompositeOperator` for AND/OR boolean logic on flag definitions
+- `FlagMetadata` data class with description, owner, and createdAt fields
+- `FlagDefinition.withMetadata()` to attach metadata to any flag definition
+- `FeatureFlags.allFlags()` to list all defined flags with their current evaluation state
+- `FlagState` data class for flag listing results
+- `FlagChangeListener` functional interface with `onFlagChanged(name, oldValue, newValue)`
+- `FeatureFlags.addChangeListener()` and `removeChangeListener()` for change notifications
+- `FeatureFlagsBuilder.cachedSource()` DSL method for adding cached sources
+
 ## [0.1.1] - 2026-03-18
 
 - Fix CI badge and gradlew permissions

@@ -29,7 +29,7 @@ public data class FlagState(
 public class FeatureFlags internal constructor(
     private val sources: List<FlagSource>
 ) {
-    @PublishedApi internal val flagsFlow = MutableStateFlow(loadAll())
+    @PublishedApi internal val flagsFlow: MutableStateFlow<Map<String, FlagDefinition>> = MutableStateFlow(loadAll())
 
     private val changeListeners = mutableListOf<FlagChangeListener>()
 

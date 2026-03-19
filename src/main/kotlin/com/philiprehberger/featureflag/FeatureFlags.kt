@@ -12,10 +12,10 @@ import kotlinx.coroutines.flow.map
  * @property enabled whether the flag is currently enabled (evaluated with empty context)
  * @property definition the underlying flag definition
  */
-data class FlagState(
-    val name: String,
-    val enabled: Boolean,
-    val definition: FlagDefinition
+public data class FlagState(
+    public val name: String,
+    public val enabled: Boolean,
+    public val definition: FlagDefinition
 )
 
 /**
@@ -26,7 +26,7 @@ data class FlagState(
  *
  * @property sources the list of flag sources (later sources override earlier ones)
  */
-class FeatureFlags internal constructor(
+public class FeatureFlags internal constructor(
     private val sources: List<FlagSource>
 ) {
     @PublishedApi internal val flagsFlow = MutableStateFlow(loadAll())
@@ -48,7 +48,7 @@ class FeatureFlags internal constructor(
      * @param context the evaluation context (defaults to [FlagContext.EMPTY])
      * @return true if the flag is enabled, false if disabled or not found
      */
-    fun isEnabled(flag: String, context: FlagContext = FlagContext.EMPTY): Boolean {
+    public fun isEnabled(flag: String, context: FlagContext = FlagContext.EMPTY): Boolean {
         val definition = flagsFlow.value[flag] ?: return false
         return definition.evaluate(flag, context)
     }
@@ -63,7 +63,7 @@ class FeatureFlags internal constructor(
      * @param default the fallback value if the flag is not found
      * @return the flag value or the default
      */
-    inline fun <reified T> getValue(flag: String, default: T): T {
+    public inline fun <reified T> getValue(flag: String, default: T): T {
         val definition = flagsFlow.value[flag] ?: return default
         return when {
             T::class == Boolean::class && definition is BooleanFlag -> definition.enabled as T
@@ -81,7 +81,7 @@ class FeatureFlags internal constructor(
      * @param flag the flag name
      * @return a flow of boolean values
      */
-    fun observe(flag: String): Flow<Boolean> {
+    public fun observe(flag: String): Flow<Boolean> {
         return flagsFlow
             .map { flags -> flags[flag]?.evaluate(flag, FlagContext.EMPTY) ?: false }
             .distinctUntilChanged()
@@ -93,7 +93,7 @@ class FeatureFlags internal constructor(
      * This triggers emission on any active [observe] flows if values change
      * and notifies registered [FlagChangeListener]s of any changes.
      */
-    fun reload() {
+    public fun reload() {
         val oldFlags = flagsFlow.value
         val newFlags = loadAll()
         flagsFlow.value = newFlags
@@ -120,7 +120,7 @@ class FeatureFlags internal constructor(
      *
      * @return a list of [FlagState] for every defined flag
      */
-    fun allFlags(): List<FlagState> {
+    public fun allFlags(): List<FlagState> {
         return flagsFlow.value.map { (name, definition) ->
             FlagState(
                 name = name,
@@ -136,7 +136,7 @@ class FeatureFlags internal constructor(
      *
      * @param listener the listener to register
      */
-    fun addChangeListener(listener: FlagChangeListener) {
+    public fun addChangeListener(listener: FlagChangeListener) {
         changeListeners.add(listener)
     }
 
@@ -145,7 +145,7 @@ class FeatureFlags internal constructor(
      *
      * @param listener the listener to remove
      */
-    fun removeChangeListener(listener: FlagChangeListener) {
+    public fun removeChangeListener(listener: FlagChangeListener) {
         changeListeners.remove(listener)
     }
 }

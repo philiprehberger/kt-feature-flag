@@ -13,13 +13,13 @@ import java.time.Instant
  * Implementations load flag definitions from various backends
  * (memory, files, remote services, etc.).
  */
-interface FlagSource {
+public interface FlagSource {
     /**
      * Loads all flag definitions from this source.
      *
      * @return a map of flag names to their definitions
      */
-    fun load(): Map<String, FlagDefinition>
+    public fun load(): Map<String, FlagDefinition>
 }
 
 /**
@@ -27,7 +27,7 @@ interface FlagSource {
  *
  * @property flags the map of flag names to definitions
  */
-class InMemorySource(private val flags: Map<String, FlagDefinition>) : FlagSource {
+public class InMemorySource(private val flags: Map<String, FlagDefinition>) : FlagSource {
     override fun load(): Map<String, FlagDefinition> = flags
 }
 
@@ -45,7 +45,7 @@ class InMemorySource(private val flags: Map<String, FlagDefinition>) : FlagSourc
  *
  * @property path the file path to the JSON file
  */
-class JsonFileSource(private val path: String) : FlagSource {
+public class JsonFileSource(private val path: String) : FlagSource {
     private val json = Json { ignoreUnknownKeys = true }
 
     override fun load(): Map<String, FlagDefinition> {
@@ -69,7 +69,7 @@ class JsonFileSource(private val path: String) : FlagSource {
  * @property ttl the time-to-live for cached results
  * @property clock a function returning the current time (for testing)
  */
-class CachedFlagSource(
+public class CachedFlagSource(
     private val delegate: FlagSource,
     private val ttl: Duration,
     private val clock: () -> Instant = { Instant.now() }
@@ -98,7 +98,7 @@ class CachedFlagSource(
     /**
      * Clears the cache, forcing the next [load] call to fetch from the delegate.
      */
-    fun invalidate() {
+    public fun invalidate() {
         cachedResult = null
         cachedAt = null
     }
@@ -111,7 +111,7 @@ class CachedFlagSource(
  * [FeatureFlags.addChangeListener] to be notified whenever a flag's
  * evaluation result changes after a [FeatureFlags.reload].
  */
-fun interface FlagChangeListener {
+public fun interface FlagChangeListener {
     /**
      * Called when a flag's value changes.
      *
@@ -119,5 +119,5 @@ fun interface FlagChangeListener {
      * @param oldValue the previous evaluation result
      * @param newValue the new evaluation result
      */
-    fun onFlagChanged(name: String, oldValue: Boolean, newValue: Boolean)
+    public fun onFlagChanged(name: String, oldValue: Boolean, newValue: Boolean)
 }

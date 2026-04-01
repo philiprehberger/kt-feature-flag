@@ -191,6 +191,55 @@ public data class CompositeFlag(
 }
 
 /**
+ * A multi-variant flag for A/B testing.
+ *
+ * Assigns users to variants based on deterministic hashing of the flag name and user ID.
+ * Each variant has a weight that determines its proportion of users.
+ *
+ * @property variants a map of variant names to their weights (must sum to 100)
+ * @property defaultVariant the variant returned when no user ID is available
+ * @property metadata optional flag metadata
+ */
+@Serializable
+@SerialName("variant")
+public data class VariantFlag(
+    public val variants: Map<String, Int>,
+    public val defaultVariant: String = variants.keys.first(),
+    @kotlinx.serialization.Transient
+    public override val metadata: FlagMetadata? = null
+) : FlagDefinition {
+    init {
+        require(variants.isNotEmpty()) { "Variants must not be empty" }
+        require(variants.values.sum() == 100) { "Variant weights must sum to 100, got ${variants.values.sum()}" }
+    }
+
+    /**
+     * Returns the variant assigned to the user in the given context.
+     *
+     * @param flagName the name of the flag (used for hashing)
+     * @param context the evaluation context
+     * @return the assigned variant name
+     */
+    public fun getVariant(flagName: String, context: FlagContext): String {
+        val userId = context.userId ?: return defaultVariant
+        val hash = "$flagName:$userId".hashCode().absoluteValue
+        val bucket = hash % 100
+
+        var cumulative = 0
+        for ((variant, weight) in variants) {
+            cumulative += weight
+            if (bucket < cumulative) return variant
+        }
+        return defaultVariant
+    }
+
+    override fun evaluate(flagName: String, context: FlagContext): Boolean = true
+
+    override fun withMetadata(metadata: FlagMetadata): VariantFlag =
+        copy(metadata = metadata)
+}
+
+/**
  * Combines this flag with another using AND logic.
  * Both flags must evaluate to true for the result to be true.
  *

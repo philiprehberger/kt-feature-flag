@@ -6,6 +6,7 @@ import java.time.Duration
 import java.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -592,5 +593,96 @@ class FeatureFlagTest {
         flags.reload()
 
         assertFalse(notified)
+    }
+
+    @Test
+    fun `evaluateAll returns all flags`() {
+        val flags = featureFlags {
+            inMemory(
+                "flag-a" to BooleanFlag(true),
+                "flag-b" to BooleanFlag(false),
+                "flag-c" to BooleanFlag(true)
+            )
+        }
+        val result = flags.evaluateAll()
+        assertEquals(3, result.size)
+        assertEquals(true, result["flag-a"])
+        assertEquals(false, result["flag-b"])
+        assertEquals(true, result["flag-c"])
+    }
+
+    @Test
+    fun `isEnabledWithDefault returns default for undefined flag`() {
+        val flags = featureFlags {
+            inMemory("flag-a" to BooleanFlag(true))
+        }
+        assertTrue(flags.isEnabledWithDefault("undefined-flag", default = true))
+        assertFalse(flags.isEnabledWithDefault("undefined-flag", default = false))
+    }
+
+    @Test
+    fun `isEnabledWithDefault evaluates defined flag normally`() {
+        val flags = featureFlags {
+            inMemory("flag-a" to BooleanFlag(false))
+        }
+        assertFalse(flags.isEnabledWithDefault("flag-a", default = true))
+    }
+
+    @Test
+    fun `VariantFlag assigns variants deterministically`() {
+        val flag = VariantFlag(
+            variants = mapOf("control" to 50, "treatment" to 50)
+        )
+        val ctx1 = flagContext { userId = "user-1" }
+        val ctx2 = flagContext { userId = "user-1" }
+        val variant1 = flag.getVariant("test-flag", ctx1)
+        val variant2 = flag.getVariant("test-flag", ctx2)
+        assertEquals(variant1, variant2, "Same user should get same variant")
+    }
+
+    @Test
+    fun `VariantFlag returns defaultVariant without userId`() {
+        val flag = VariantFlag(
+            variants = mapOf("control" to 50, "treatment" to 50),
+            defaultVariant = "control"
+        )
+        val variant = flag.getVariant("test-flag", FlagContext.EMPTY)
+        assertEquals("control", variant)
+    }
+
+    @Test
+    fun `VariantFlag weights must sum to 100`() {
+        assertFailsWith<IllegalArgumentException> {
+            VariantFlag(variants = mapOf("a" to 30, "b" to 30))
+        }
+    }
+
+    @Test
+    fun `getVariant returns variant for VariantFlag`() {
+        val flags = featureFlags {
+            inMemory("ab-test" to VariantFlag(
+                variants = mapOf("control" to 50, "treatment" to 50)
+            ))
+        }
+        val ctx = flagContext { userId = "user-1" }
+        val variant = flags.getVariant("ab-test", ctx)
+        assertNotNull(variant)
+        assertTrue(variant in listOf("control", "treatment"))
+    }
+
+    @Test
+    fun `getVariant returns null for non-variant flag`() {
+        val flags = featureFlags {
+            inMemory("bool-flag" to BooleanFlag(true))
+        }
+        assertNull(flags.getVariant("bool-flag"))
+    }
+
+    @Test
+    fun `getVariant returns null for undefined flag`() {
+        val flags = featureFlags {
+            inMemory("flag-a" to BooleanFlag(true))
+        }
+        assertNull(flags.getVariant("undefined"))
     }
 }

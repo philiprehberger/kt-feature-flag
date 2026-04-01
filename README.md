@@ -11,7 +11,7 @@ Local feature flag evaluation with percentage rollouts, user targeting, time-bas
 ### Gradle (Kotlin DSL)
 
 ```kotlin
-implementation("com.philiprehberger:feature-flag:0.2.4")
+implementation("com.philiprehberger:feature-flag:0.3.0")
 ```
 
 ### Maven
@@ -20,7 +20,7 @@ implementation("com.philiprehberger:feature-flag:0.2.4")
 <dependency>
     <groupId>com.philiprehberger</groupId>
     <artifactId>feature-flag</artifactId>
-    <version>0.2.4</version>
+    <version>0.3.0</version>
 </dependency>
 ```
 
@@ -197,6 +197,36 @@ flags.observe("dark-mode").collect { enabled ->
 flags.reload()
 ```
 
+### A/B Test Variants
+
+```kotlin
+val flags = featureFlags {
+    inMemory(
+        "checkout-flow" to VariantFlag(
+            variants = mapOf("control" to 50, "treatment-a" to 25, "treatment-b" to 25)
+        )
+    )
+}
+
+val ctx = flagContext { userId = "user-123" }
+val variant = flags.getVariant("checkout-flow", ctx)
+// "control", "treatment-a", or "treatment-b" (deterministic per user)
+```
+
+### Evaluate All Flags
+
+```kotlin
+val allResults = flags.evaluateAll(context)
+// {"feature-a" to true, "feature-b" to false, ...}
+```
+
+### Default for Undefined Flags
+
+```kotlin
+val enabled = flags.isEnabledWithDefault("new-feature", default = true)
+// Returns true if the flag is not defined
+```
+
 ## API
 
 | Class / Function | Description |
@@ -214,6 +244,10 @@ flags.reload()
 | `SegmentFlag` | Attribute-based user targeting |
 | `TimeBasedFlag` | Time-window-based flag with `startDate`/`endDate` |
 | `CompositeFlag` | Combines flag rules with AND/OR operators |
+| `VariantFlag` | Multi-variant flag for A/B testing |
+| `FeatureFlags.getVariant()` | Get the assigned variant for a user |
+| `FeatureFlags.evaluateAll()` | Evaluate all flags at once |
+| `FeatureFlags.isEnabledWithDefault()` | Check flag with custom default |
 | `FlagMetadata` | Metadata (description, owner, createdAt) for a flag |
 | `FlagDefinition.and(other)` | Combines two flags with AND logic |
 | `FlagDefinition.or(other)` | Combines two flags with OR logic |
